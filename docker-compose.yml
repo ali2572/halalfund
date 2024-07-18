@@ -1,0 +1,26 @@
+services:
+
+  laravel_halalfund:
+    container_name: laravel_halalfund
+    build: .
+    volumes:
+      - ./laravel-app:/var/www/html
+    ports:
+      - 9000:8080
+  
+
+  mysql_db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_User: root
+      MYSQL_DATABASE: newlaravel
+    ports:
+    - 3307:3306
+  
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - 9001:80
+    environment:
+      - PMA_ARBITRARY=1

@@ -36,7 +36,7 @@ use Tests\TestCase;
             "name"=>fake()->name,
             "email"=>fake()->email,
             "password"=> fake()->text(10),
-            "password_confirmation"=> fake()->text(8),
+            "password_confirmation"=> fake()->phoneNumber(),
 
         ],[
             "Accept"=>"application/json"

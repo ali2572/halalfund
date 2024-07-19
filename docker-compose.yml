@@ -1,5 +1,5 @@
 services:
-
+#confige base container
   laravel_halalfund:
     container_name: laravel_halalfund
     build: .
@@ -8,7 +8,7 @@ services:
     ports:
       - 9000:8080
   
-
+#config & set param for mysql service
   mysql_db:
     image: mysql:latest
     environment:
@@ -17,7 +17,7 @@ services:
       MYSQL_DATABASE: newlaravel
     ports:
     - 3307:3306
-  
+#config & set port for phpmyadmin service
   phpmyadmin:
     image: phpmyadmin:latest
     ports:

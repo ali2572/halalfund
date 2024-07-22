@@ -2,14 +2,18 @@
 
 namespace  App\services;
 
+use App\base\ServiceReturn;
+use App\base\serviceWrapper;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 
 class UserService{
 
-    public function registerUser(array $valadateData){
-        try{
+    public function registerUser(array $valadateData):ServiceReturn
+    {
+        //use serviceWrapper for lessRepetCode
+        return app(serviceWrapper::class)(function()use($valadateData){
             User::create([
                 "name" => $valadateData['name'],
                 "email" => $valadateData['email'],
@@ -20,97 +24,52 @@ class UserService{
                 "email" => $valadateData['email'],
                 "password" => $valadateData['password']
             ]);
-
-        }catch(\Exception $e){
-            return [
-                'status'=>false,
-                'data'=>$e->getMessage()
-            ];  
-        }
-        return [
-            'status'=>true,
-            'data'=>(object)[
+            return new ServiceReturn((object)[
                 "token"=>$token,
                 "expires_in" => auth()->factory()->getTTL() * 60
-                ]
-        ];
+                ],true);
+        });
     }
     public function loginUser(Request $request){
-        try{
-
+        return app(serviceWrapper::class)(function()use($request){
             $token = auth()->attempt([
                 "email" => $request->email,
                 "password" => $request->password
             ]);
             if($token){
-                return [    
-                    "status"=>'haveToken',
-                    'data'=>(object)[
-                        "token"=>$token,
-                        "expires_in" => auth()->factory()->getTTL() * 60
-                        ]
-                    ];
+                return new ServiceReturn((object)[
+                    "token"=>$token,
+                    "expires_in" => auth()->factory()->getTTL() * 60
+                    ],'haveToken');
                 }
-                return[
-                    "status"=>'notToken',
-                    "data"=> "email or password was wrong"
-                    ];
-        }catch(\Exception $e){
-            return [
-                'ok'=>false,
-                'data'=>$e->getMessage()
-                ];
-            }      
+                return new ServiceReturn("email or password was wrong",'notToken');
+        });     
     }
     public function ProfileUser(){
-      try{
-        $user=auth()->user();
-        return [
-            'status'=>true,
-            'data'=>$this->filterUserDetails($user)
-            ];
-        }catch(\Exception $e){
-            return [    
-                'status'=>false,
-                'data'=>$e->getMessage()
-                ];
-        }
-
+        return app(serviceWrapper::class)(function(){
+            $user=auth()->user();
+            return new ServiceReturn($this->filterUserDetails($user),true);
+        });
     }
     public function refreshTokenUser(){
-        try{
-        $token = auth()->refresh();
-
-        return [
-            "status" => true,
-            "data" => (object)[
-            "token"=>$token,
-            "expires_in" => auth()->factory()->getTTL() * 60
-            ]
-        ];
         
-        }catch(\Exception $e){
-            return [
-                "status"=>false,
-                "data"=>$e->getMessage()
-                ];
-        }
+        return app(serviceWrapper::class)(function(){
+            $token = auth()->refresh();
+            return new ServiceReturn((object)[
+            "token"=>$token,
+            "expires_in" => auth()->factory()->getTTL() * 60],
+            true
+            );
+        });
+
     }
     public function logoutUser(){
-        try{
+      return app(serviceWrapper::class)(function(){
         auth()->logout();
-
-        return[
-            "status" => true,
-            "data" => "User logged out"
-        ];
-        }
-        catch(\Exception $e){
-            return [
-                "status"=>false,
-                "data"=>$e->getMessage()
-                ];
-        }
+        return new ServiceReturn("User logged out",
+            true
+            );
+      });
     }
     
     public function filterUserDetails($user){

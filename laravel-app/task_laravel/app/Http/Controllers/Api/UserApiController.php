@@ -25,15 +25,15 @@ class UserApiController extends Controller
         // User model to save user in database
         $result=$this->userService->registerUser($valadateData);
 
-        if($result['status']){
+        if($result->status){
         //send token and expire response 
         return ApiResponse::add_Message("User registered successfully")->add_append([
-            "token" => $result['data']->token,
-            "expires_in" => $result['data']->expires_in
-        ])->add_statocCode(201)->add_status(true)->get()->response();  
+            "token" => $result->data->token,
+            "expires_in" => $result->data->expires_in
+        ])->add_statusCode(201)->add_status(true)->get()->response();  
         }
         else{
-            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+            return ApiResponse::add_data($result->data)->add_statusCode(500)->get()->response();
         }
        
 
@@ -51,16 +51,16 @@ class UserApiController extends Controller
         // Authentication user and generate token
         $result=$this->userService->loginUser($request);
         //check if Authentication user is faild
-        if($result['status']=='notToken'){
-            return ApiResponse::add_Message("email or password was wrong")->add_statocCode(401)->add_status(false)->get()->response();
+        if($result->status=='notToken'){
+            return ApiResponse::add_Message("email or password was wrong")->add_statusCode(401)->add_status(false)->get()->response();
         }
-        elseif($result['status'] =='haveToken'){
+        elseif($result->status =='haveToken'){
             return ApiResponse::add_Message("User logged in")->add_append([
-                "token" => $result['data']->token,
-                "expires_in" => $result['data']->expires_in
+                "token" => $result->data->token,
+                "expires_in" => $result->data->expires_in
             ])->add_status(true)->get()->response();  
         }else{
-            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+            return ApiResponse::add_data($result->data)->add_statusCode(500)->get()->response();
         }
 
     }
@@ -70,10 +70,10 @@ class UserApiController extends Controller
         //set usereData from UserService 
         $result=$this->userService->ProfileUser();
 
-        if($result['status']){
-            return ApiResponse::add_Message("Profile data")->add_data($result['data'])->get()->response();
+        if($result->status){
+            return ApiResponse::add_Message("Profile data")->add_data($result->data)->get()->response();
         }else{
-            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+            return ApiResponse::add_data($result->data)->add_statusCode(500)->get()->response();
         }
     }
 
@@ -83,13 +83,13 @@ class UserApiController extends Controller
     public function refreshToken(){
 
         $result=$this->userService->refreshTokenUser();
-        if($result['status']){
+        if($result->status){
             return ApiResponse::add_Message("Refresh token",)->add_append([
-                "token" => $result['data']->token,
-                "expires_in" => $result['data']->expires_in  
+                "token" => $result->data->token,
+                "expires_in" => $result->data->expires_in  
             ])->get()->response();
         }else{
-            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+            return ApiResponse::add_data($result->data)->add_statusCode(500)->get()->response();
         }
     }
 
@@ -97,10 +97,10 @@ class UserApiController extends Controller
     public function logout(){
         
         $result=$this->userService->logoutUser();
-        if($result['status']){
-            return ApiResponse::add_Message($result['data'])->get()->response();
+        if($result->status){
+            return ApiResponse::add_Message($result->data)->get()->response();
         }else{
-            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+            return ApiResponse::add_data($result->data)->add_statusCode(500)->get()->response();
         }
     }
 }

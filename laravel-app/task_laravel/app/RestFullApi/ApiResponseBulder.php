@@ -17,7 +17,7 @@ class ApiResponseBulder{
         $this->response->set_data($data);
         return $this;
     }
-    public function add_statocCode(int $statocCode){
+    public function add_statusCode(int $statocCode){
         $this->response->set_statusCode($statocCode);
         return $this;
     }

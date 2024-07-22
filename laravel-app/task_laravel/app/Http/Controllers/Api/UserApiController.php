@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
+use App\RestFullApi\Facades\ApiResponse;
+use App\RestFullApi\ApiResponseBulder;
+use App\services\UserService;
 use Illuminate\Http\Request;
 use App\Models\User;
 
 class UserApiController extends Controller
 {
+
+    public function __construct(private UserService $userService) {
+        
+    }
     // Register API - POST (name, email, password)
     public function register(UserRequest $request){
 
@@ -16,23 +23,20 @@ class UserApiController extends Controller
         $valadateData=$request->validated();
 
         // User model to save user in database
-        User::create([
-            "name" => $valadateData['name'],
-            "email" => $valadateData['email'],
-            "password" => bcrypt($valadateData['password'])
-        ]);
-        // Authentication user and generate token
-        $token = auth()->attempt([
-            "email" => $valadateData['email'],
-            "password" => $valadateData['password']
-        ]);
+        $result=$this->userService->registerUser($valadateData);
+
+        if($result['status']){
         //send token and expire response 
-        return response()->json([
-            "status" => true,
-            "message" => "User registered successfully",
-            "token" => $token,
-            "expires_in" => auth()->factory()->getTTL() * 60
-        ],201);        
+        return ApiResponse::add_Message("User registered successfully")->add_append([
+            "token" => $result['data']->token,
+            "expires_in" => $result['data']->expires_in
+        ])->add_statocCode(201)->add_status(true)->get()->response();  
+        }
+        else{
+            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+        }
+       
+
     }
 
     // Login API - POST (email, password)
@@ -43,71 +47,60 @@ class UserApiController extends Controller
             "email" => "required|email",
             "password" => "required"
         ]);
+        
         // Authentication user and generate token
-        $token = auth()->attempt([
-            "email" => $request->email,
-            "password" => $request->password
-        ]);
+        $result=$this->userService->loginUser($request);
         //check if Authentication user is faild
-        if(!$token){
-
-            return response()->json([
-                "status" => false,
-                "message" => "email or password was wrong"
-            ],401);
+        if($result['status']=='notToken'){
+            return ApiResponse::add_Message("email or password was wrong")->add_statocCode(401)->add_status(false)->get()->response();
         }
-
-        return response()->json([
-            "status" => true,
-            "message" => "User logged in",
-            "token" => $token,
-            "expires_in" => auth()->factory()->getTTL() * 60
-        ]);
+        elseif($result['status'] =='haveToken'){
+            return ApiResponse::add_Message("User logged in")->add_append([
+                "token" => $result['data']->token,
+                "expires_in" => $result['data']->expires_in
+            ])->add_status(true)->get()->response();  
+        }else{
+            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+        }
 
     }
 
     // Profile API - GET (JWT Auth Token)
     public function profile(){
-        //set usereData from auth method
-        $userData = auth()->user();
+        //set usereData from UserService 
+        $result=$this->userService->ProfileUser();
+
+        if($result['status']){
+            return ApiResponse::add_Message("Profile data")->add_data($result['data'])->get()->response();
+        }else{
+            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+        }
+    }
+
+
     
-        return response()->json([
-            "status" => true,
-            "message" => "Profile data",
-            "data"=>$this->filterUserDetails($userData) //method for filter user data
-        ]);
-    }
-
-    //filter user data
-    public function filterUserDetails($user){
-      return [
-            "user_id"=> $user->id,
-            "user_name"=> $user->name,
-            "user_email"=> $user->email,
-      ];
-    }
-
     // Refresh Token API - GET (JWT Auth Token)
     public function refreshToken(){
 
-        $token = auth()->refresh();
-
-        return response()->json([
-            "status" => true,
-            "message" => "Refresh token",
-            "token" => $token,
-            "expires_in" => auth()->factory()->getTTL() * 60
-        ]);
+        $result=$this->userService->refreshTokenUser();
+        if($result['status']){
+            return ApiResponse::add_Message("Refresh token",)->add_append([
+                "token" => $result['data']->token,
+                "expires_in" => $result['data']->expires_in  
+            ])->get()->response();
+        }else{
+            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+        }
     }
 
     // Logout API - GET (JWT Auth Token)
     public function logout(){
         
-        auth()->logout();
-
-        return response()->json([
-            "status" => true,
-            "message" => "User logged out"
-        ]);
+        $result=$this->userService->logoutUser();
+        if($result['status']){
+            return ApiResponse::add_Message($result['data'])->get()->response();
+        }else{
+            return ApiResponse::add_data($result['data'])->add_statocCode(500)->get()->response();
+        }
     }
 }

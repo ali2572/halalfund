@@ -10,6 +10,10 @@ use \Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
+
+    public $bindings = [
+        ServerProvider::class => ApiResponseProvider::class,
+    ];
     /**
      * Register any application services.
      */

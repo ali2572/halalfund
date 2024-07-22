@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ArticleController extends Controller
 {
@@ -67,8 +68,9 @@ class ArticleController extends Controller
         $article=Article::find($request->article_id);
         //check is article have in DB
         if($article){
+            
             //check is article writer is Authenticated user
-            if($article->user_id==auth()->user()->id){
+            if(Gate::allows("access-use", $article)){
                     //filter data for use in response
                     $value=[
                         "article_id"=>(int)$article->id,
@@ -105,7 +107,7 @@ class ArticleController extends Controller
         //check is article have in DB
         if($article){
             //check is article writer is Authenticated user
-            if(auth()->user()->id == $article->user_id){
+            if(Gate::allows("access-use", $article)){
                 //validate new data for update
                 $validateData=$request->validated();
                 //update article with new date 
@@ -134,7 +136,8 @@ class ArticleController extends Controller
     {
         $article=Article::find($request->article_id);
         if($article){
-            if(auth()->user()->id == $article->user_id){
+            
+            if(Gate::allows("access-use", $article)){
                 //delete article from DB
                 $article->delete();
                 return response()->json([

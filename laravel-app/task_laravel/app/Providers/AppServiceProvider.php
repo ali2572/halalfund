@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
+use App\Models\User;
 use Illuminate\Support\ServiceProvider;
+use \Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::define("access-use", function (User $user,Article $article) {
+            return $user->id == $article->user_id;
+        });
     }
 }

@@ -70,7 +70,7 @@ class ArticleController extends Controller
         if($article){
             
             //check is article writer is Authenticated user
-            if(Gate::allows("access-use", $article)){
+            if(Gate::allows("view", $article)){
                     //filter data for use in response
                     $value=[
                         "article_id"=>(int)$article->id,
@@ -107,7 +107,7 @@ class ArticleController extends Controller
         //check is article have in DB
         if($article){
             //check is article writer is Authenticated user
-            if(Gate::allows("access-use", $article)){
+            if(Gate::allows("update", $article)){
                 //validate new data for update
                 $validateData=$request->validated();
                 //update article with new date 
@@ -137,7 +137,7 @@ class ArticleController extends Controller
         $article=Article::find($request->article_id);
         if($article){
             
-            if(Gate::allows("access-use", $article)){
+            if(Gate::allows("delete", $article)){
                 //delete article from DB
                 $article->delete();
                 return response()->json([

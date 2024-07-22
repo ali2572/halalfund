@@ -1,4 +1,4 @@
-this is a simple dockerize  api  project for laravel 11 with future and unit Model test
+this is a simple dockerize  api  project for laravel 11 with Feature and unit Model test
 
 for installand use 						
 	
